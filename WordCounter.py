@@ -26,9 +26,9 @@ def word_count(str):
 
     print(counts)
 
-word_count('word')											# should print out 'word': 1
+word_count('word')											#should print out 'word': 1
 
-word_count('one of each')          							# should print out  'one': 1, 'of': 1, 'each': 1
+word_count('one of each')          							#should print out  'one': 1, 'of': 1, 'each': 1
 
 word_count('one fish two fish red fish blue fish')  		#should print out  'one': 1, 'fish': 4, 'two': 1, 'red': 1, 'blue': 1
 
