@@ -1,11 +1,32 @@
 import Robot
+import time
 
-bob = Robot.Robot('/dev/tty.usbserial-DA01NNEY')
+bob = Robot.Robot('/dev/tty.usbserial-DA01NOMJ')
 
 bob.start()
 
-bob.full()
+bob.safe()
 
-bob.debris(3)
+bob.turnRight()
+
+time.sleep(0.95)
+
+bob.noDrive()
+
+time.sleep(1)
+
+bob.turnLeft()
+
+time.sleep(0.95)
+
+bob.noDrive()
+
+time.sleep(1)
+
+bob.turnAround()
+
+bob.noDrive()
+
+time.sleep(1)
 
 bob.stop()
