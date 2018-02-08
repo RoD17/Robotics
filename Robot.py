@@ -2,7 +2,7 @@
 ##   Author:     Rodney Greene, John Greenan
 ##
 ##   Written:	 01/18/2018
-##	 Updated:	 01/25/2018
+##	 Updated:	 02/7/2018
 ##   
 ##   Library for iRobot Create 2 commands.
 ##
@@ -15,59 +15,6 @@ import time
 
 class Robot:
 
-	#def definitions(self):
-	'''
-		#Globalization
-		global startCMD
-		global seekDockCMD
-		global fullCMD
-		global safeCMD
-		global cleanCMD
-		global everCleanCMD
-		global spotCMD
-		global powerCMD
-		global scheduleCMD
-		global setDayTimeCMD
-		global resetCMD
-		global stopCMD
-		global buttonsCMD
-		global driveDirectCMD
-		global driveCMD
-		global drivePWMCMD
-		global motorsCMD
-		global motorsPWNCMD
-		global ledsCMD
-		global schLedsCMD
-		global sevenSegCMD
-		global buttonsCMD
-		global songCMD
-		global sensorCMD
-		global queryCMD
-		global streamCMD
-		global pauseCMD
-		global wallPKT
-		global bmpWhlPKT
-		global cliffLeftPKT
-		global cliffFrontLeftPKT
-		global cliffFrontRightPKT
-		global cliffRightPKT
-		global virtualWallPKT
-		global buttonPKT
-		global distancePKT
-		global anglePKT
-		global chargingStatePKT
-		global voltagePKT
-		global temperaturePKT
-		global batteryChargePKT
-		global wallSignalPKT
-		global cliffLeftSignalPKT
-		global cliffFrontLeftSignalPKT
-		global cliffFrontRightSignalPKT
-		global cliffRightSignalPKT
-
-
-
-	'''
 	# commands definitions
 	startCMD					=  128
 	seekDockCMD					=  143
@@ -118,9 +65,8 @@ class Robot:
 	cliffFrontRightSignalPKT	=  30
 	cliffRightSignalPKT			=  31
 
-
-
-	def __init__(self, port):																						#Initializes connection via serial port.
+	#Initializes connection via serial port.
+	def __init__(self, port):
 		try:
 			self.serial_connection = serial.Serial(port, baudrate=115200, timeout =1)
 			print "Connected!"
@@ -131,161 +77,233 @@ class Robot:
 		time.sleep(0.2)
 		self.serial_connection.open()
 
-	def sendCommand(self, input):																					#Sends commands via established serial connection.
+	#Sends commands via established serial connection.
+	def sendCommand(self, input):
 		self.serial_connection.write(input)
 
-	def read(self, howManyBytes):
-		buttonState = connection.read()
+	#Sends the sensorCMD plus the specified packet and catches byte code and converts to string for comparison.
+	def read(self, pkt):
+		self.sendCommand(chr(self.sensorCMD))
+		self.sendCommand(chr(pkt))
+		time.sleep(0.1)
+		buttonState = self.serial_connection.read()
 		byte = struct.unpack('B', buttonState)[0]
 		binary = '{0:08b}'.format(byte)
 		return binary
 
-	def start(self):																								#Start bit opcode.
+	#Start bit opcode.
+	def start(self):																								
 		self.sendCommand(chr(self.startCMD))
 		time.sleep(0.2)
 
-	def stop(self):																									#Stop bit opcode.
+	#Stop bit opcode.
+	def stop(self):																									
 		self.sendCommand(chr(self.stopCMD))
 		time.sleep(0.2)
 
-	def reset(self):																								#Resets create.
+	#Resets create.
+	def reset(self):																								
 		self.sendCommand(chr(self.resetCMD))
 		time.sleep(0.2)
 
-	def seekDock(self):																								#Finds and returns to charging station.
+	#Finds and returns to charging station.
+	def seekDock(self):																								
 		self.sendCommand(chr(self.seekDockCMD))
 		time.sleep(0.2)
 		
-
-	def drive(self, velocityHighByte, velocityLowByte, radiusHighByte, radiusLowByte, time):						#Moves robot by designating shared velocity of wheels, 
-		self.sendCommand(chr(self.driveCMD))																		#turn radius, and duration in seconds.
+	#Moves robot by designating shared velocity of wheels, turn radius, and duration in seconds.
+	def drive(self, velocityHighByte, velocityLowByte, radiusHighByte, radiusLowByte, time):						
+		self.sendCommand(chr(self.driveCMD))
 		self.sendCommand(chr(velocityHighByte))
 		self.sendCommand(chr(velocityLowByte))
 		self.sendCommand(chr(radiusHighByte))
 		self.sendCommand(chr(radiusLowByte))
 		time.sleep(time)
 
-	def driveDirect(self, rightWheelHighByte, rightWheelLowByte, leftWheelHighByte, leftWheelLowByte):				#Moves robot by designating the individual velocity of
-		self.sendCommand(chr(self.driveDirectCMD))																	#each wheel. Formatted by high byte and low byte.
+	#Moves robot by designating the individual velocity of each wheel. Formatted by high byte and low byte.
+	def driveDirect(self, rightWheelHighByte, rightWheelLowByte, leftWheelHighByte, leftWheelLowByte):				
+		self.sendCommand(chr(self.driveDirectCMD))
 		self.sendCommand(chr(rightWheelHighByte))
 		self.sendCommand(chr(rightWheelLowByte))
 		self.sendCommand(chr(leftWheelHighByte))
 		self.sendCommand(chr(leftWheelLowByte))
 
-	def straight(self):
+	#Moves the bot forwards at 200 mm/s for a specified number of seconds.
+	def straight(self, seconds):
 		self.drive(0,200,0,0)
+		time.sleep(seconds)
 
+	#Turns the bot around.
 	def turnAround(self):
 		self.driveDirect(0,200,255,56)
 		time.sleep(1.85)
 
+	#Rotated the bot clockwise at 200 mm/s.
 	def turnRight(self):
 		self.driveDirect(255,56,0,200)
 
+	#Rotated the bot counter-clockwise at 200 mm/s.
 	def turnLeft(self):
 		self.driveDirect(0,200,255,56)
 
+	#Stops the robot.
 	def noDrive(self):
 		self.driveDirect(0,0,0,0)
 
-	def leds(self, ledBits, powerColor, powerIntensity, time):													#Toggles the LED lights by LED bit designation, color, 
-		self.sendCommand(chr(self.ledsCMD))																		#and instensity of the light.
+	#Toggles the LED lights by LED bit designation, color, and instensity of the light.
+	def leds(self, ledBits, powerColor, powerIntensity):													
+		self.sendCommand(chr(self.ledsCMD))																		
 		self.sendCommand(chr(ledBits))
 		self.sendCommand(chr(powerColor))
 		self.sendCommand(chr(powerIntensity))
-		time.sleep(time)
 
-	def debris(self, time):																						#Helper function for the debris light.
-		self.leds(debrisCMD, 255, 255, time)
+	#Helper method that turns off all LEDs warning lights.
+	def noLED(self, color):
+		self.leds(0, color, 255)
 
-	def spot(self, time):																						#Helper function for the spot light.
-		self.leds(spotCMD, 255, 255, time)
+	#Helper function for the debris light.
+	def debris(self, color):																						
+		self.leds(1, color, 255)
 
-	def dock(self, time):																						#Helper function for the dock light.
-		self.leds(dockCMD, 255, 255, time)
+	#Helper function for the spot light.
+	def spot(self):																						
+		self.leds(spotCMD, 255, 255)
 
-	def checkRobot(self, time):																					#Helper function for the check robot light.
-		self.leds(checkRobotCMD, 255, 255, time)
+	#Helper function for the dock light.
+	def dock(self, time):																						
+		self.leds(dockCMD, 255, 255)
+
+	#Helper function for the check robot light.
+	def checkRobot(self, color):																					
+		self.leds(8, color, 255)
+
+	#Helper function for checking both bumpers.
+	def checkDebbie(self, color):
+		self.leds(9, color, 255)
 
 		
-
-	def digitLEDsASCII(self, digit3, digit2, digit1, digit0, time):												#Sends opcode for seven segment display followed
-		self.sendCommand(chr(self.sevenSegCMD))																	#by the desired characters to be displayed.
+	#Sends opcode for seven segment display followed by the desired characters to be displayed.
+	def digitLEDsASCII(self, digit3, digit2, digit1, digit0, time):												
+		self.sendCommand(chr(self.sevenSegCMD))																	
 		self.sendCommand(chr(digit3))
 		self.sendCommand(chr(digit2))
 		self.sendCommand(chr(digit1))
 		self.sendCommand(chr(digit0))
 		time.sleep(time)
-	
-	def full(self):																								#Sets the create to full mode.
+
+	#Sets the create to full mode.
+	def full(self):																								
 		self.sendCommand(chr(self.fullCMD))
 		time.sleep(0.3)
 
-	def safe(self):																								#Sets the create to safe mode.
+	#Sets the create to safe mode.
+	def safe(self):																								
 		self.sendCommand(chr(self.safeCMD))
 		time.sleep(0.3)
-	
-	def sensor(self, packet):																					#Polls a sensor designated by packet id.
-		self.sendCommand(self.sensorCMD)
-		self.sendCommand(chr(packet))
-		time.sleep(0.2)
-		return read()
 
-	def wall(self):																								#Polls the wall sensor.
-		print(sensor(self.wallPKT))
+	#Polls the wall sensor.
+	def wall(self):																								
+		return self.read(self.wallPKT)
 
-	def bmpWhl(self):																							#Polls the bump and wheel sensors.
-		self.sensor(self.bmpWhlPKT)
+	#Polls the bump and wheel sensors.
+	def bmpWhl(self):																							
+		return self.read(self.bmpWhlPKT)
 
-	def cliffL(self):																							#Polls the left cliff sensor.
-		self.sensor(self.cliffLPKT)
+	#Polls the left cliff sensor.
+	def cliffL(self):																							
+		return self.read(self.cliffLPKT)
 
-	def cliffFL(self):																							#Polls the front left cliff sensor.
-		self.sensor(self.cliffFLPKT)
+	#Polls the front left cliff sensor.
+	def cliffFL(self):																							
+		return self.read(self.cliffFLPKT)
 
-	def cliffFR(self):																							#Polls the front right cliff sensor.
-		self.sensor(self.cliffFRPKT)
+	#Polls the front right cliff sensor.
+	def cliffFR(self):																							
+		return self.read(self.cliffFRPKT)
 
-	def cliffR(self):																							#Polls the right cliff sensor.
-		self.sensor(self.cliffRPKT)
+	#Polls the right cliff sensor.
+	def cliffR(self):																							
+		return self.read(self.cliffRPKT)
 
-	def vWall(self):																							#Polls the virtual wall sensor.
-		self.sensor(self.virtualWallPKT)
+	#Polls the virtual wall sensor.
+	def vWall(self):																							
+		return self.read(self.virtualWallPKT)
 
-	def button(self):																							#Polls the button sensors.
-		self.sensor(self.buttonPKT)
+	#Polls the button sensors.
+	def button(self):																							
+		return self.read(self.buttonPKT)
 
-	def dist(self):																								#Polls the wall sensor, reads a returned value.
-		self.sensor(self.distancePKT)
+	#Polls the wall sensor, reads a returned value.
+	def dist(self):																								
+		return self.read(self.distancePKT)
 
-	def angle(self):																							#Reads the angle sensor.
-		self.sensor(self.anglePKT)
+	#Reads the angle sensor.
+	def angle(self):																							
+		return self.read(self.anglePKT)
 
-	def isCharge(self):																							#Determines if the create is charging.
-		self.sensor(self.chargingStatePKT)
+	#Determines if the create is charging.
+	def isCharge(self):																							
+		return self.read(self.chargingStatePKT)
 
-	def volt(self):																								#Returns how many volts the create is charging at.
-		self.sensor(self.voltagePKT)
+	#Returns how many volts the create is charging at.
+	def volt(self):																								
+		return self.read(self.voltagePKT)
 
-	def temp(self):																								#Returns the battery temperature.
-		self.sensor(self.temperaturePKT)
+	#Returns the battery temperature.
+	def temp(self):																								
+		return self.read(self.temperaturePKT)
 
-	def batCharge(self):																						#Returns remaining charge in battery.
-		self.sensor(self.batteryChargePKT)
+	#Returns remaining charge in battery.
+	def batCharge(self):																						
+		return self.read(self.batteryChargePKT)
 
-	def wallSig(self):																							#Returns whether or not a wall is detected.
-		self.sensor(self.wallSignalPKT)
+	#Returns whether or not a wall is detected.
+	def wallSig(self):																							
+		return self.read(self.wallSignalPKT)
 
-	def cliffLSig(self):																						#Polls the left cliff sensor. Detects cliffs.																				
-		self.sensor(self.cliffLeftSignalPKT)
+	#Polls the left cliff sensor. Detects cliffs.
+	def cliffLSig(self):																																										
+		return self.read(self.cliffLeftSignalPKT)
 
-	def cliffFLSig(self):																						#Polls the front left cliff sensor. Detects cliffs.
-		self.sensor(self.cliffFrontLeftSignalPKT)
+	#Polls the front left cliff sensor. Detects cliffs.
+	def cliffFLSig(self):																						
+		return self.read(self.cliffFrontLeftSignalPKT)
 
-	def cliffFRSig(self):																						#Polls the front right cliff sensor. Detects cliffs.
-		self.sensor(self.cliffFrontRightSignalPKT)
+	#Polls the front right cliff sensor. Detects cliffs.
+	def cliffFRSig(self):																						
+		return self.read(self.cliffFrontRightSignalPKT)
 
-	def cliffRSig(self):																						#Polls the right cliff sensor. Detects cliffs.
-		self.sensor(self.cliffRightPKT)
+	#Polls the right cliff sensor. Detects cliffs.
+	def cliffRSig(self):																						
+		return self.read(self.cliffRightPKT)
+
+	#Compared sensor reading to left bumper value.
+	def isBumpLeft(self, sense, color):
+		if(sense == '00000001'):
+			self.debris(color)
+
+	#Compared sensor reading to right bumper value.
+	def isBumpRight(self, sense, color):
+		if(sense == '00000010'):
+			self.checkRobot(color)
+
+	#Compared sensor reading to combined bumper value.
+	def isBumpBoth(self, sense, color):
+		if(sense == '00000011'):
+			self.checkDebbie(color)
+
+	#Compared sensor reading to the lack of bumpers value.
+	def isNotBump(self, sense, color):
+		if(sense == '00000000'):
+			self.noLED(color)
+
+	#Helper method that compares all bumper byte values to the sensor reading in sequence.
+	def isBump(self, sense, color):
+		self.isBumpLeft(sense, color)
+		self.isBumpRight(sense, color)
+		self.isBumpBoth(sense, color)
+		self.isNotBump(sense, color)
+
+
 
 
